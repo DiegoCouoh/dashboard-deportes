@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Deportivo Pro</title>
+  <title>Dashboard Deportivo Pro + Calculadora de Apuestas</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -30,7 +30,7 @@
         radial-gradient(ellipse 60% 40% at 85% 110%, rgba(168,85,247,0.15), transparent);
     }
     header {
-      background: rgba(15,23,42,0.9);
+      background: rgba(15,23,42,0.92);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid rgba(99,102,241,0.15);
       padding: 0.9rem 1.4rem;
@@ -75,7 +75,7 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
     }
-    #search { min-width: 200px; }
+    #search { min-width: 180px; }
     .status {
       font-size: 0.8rem; color: var(--muted);
       display: flex; align-items: center; gap: 0.4rem;
@@ -89,10 +89,10 @@
     .dot.err { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    main { max-width: 1400px; margin: 0 auto; padding: 1.3rem 1.2rem 3rem; }
+    main { max-width: 1400px; margin: 0 auto; padding: 1.2rem 1.2rem 3rem; }
 
     .tabs {
-      display: flex; gap: 0.4rem; margin-bottom: 1.4rem; flex-wrap: wrap;
+      display: flex; gap: 0.4rem; margin-bottom: 1.3rem; flex-wrap: wrap;
     }
     .tab {
       padding: 0.5rem 1.15rem;
@@ -115,7 +115,7 @@
     .sport-block { margin-bottom: 2.2rem; }
     .sport-header {
       display: flex; align-items: center; gap: 0.6rem;
-      margin-bottom: 1rem; padding-left: 0.15rem;
+      margin-bottom: 1rem;
     }
     .sport-header h2 { font-size: 1.2rem; font-weight: 700; }
     .sport-header .count {
@@ -140,13 +140,11 @@
       padding: 1.15rem;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-      position: relative;
-      overflow: hidden;
     }
     .card:hover {
       transform: translateY(-5px);
       border-color: rgba(99,102,241,0.45);
-      box-shadow: 0 18px 40px -12px rgba(0,0,0,0.65), 0 0 0 1px rgba(99,102,241,0.2);
+      box-shadow: 0 18px 40px -12px rgba(0,0,0,0.65);
     }
     .card-top {
       display: flex; justify-content: space-between; align-items: center;
@@ -181,9 +179,7 @@
       font-weight: 800;
       min-width: 40px;
       text-align: right;
-      font-variant-numeric: tabular-nums;
     }
-    .team .score.win { color: var(--green); text-shadow: 0 0 14px rgba(16,185,129,0.45); }
 
     .card-bottom {
       margin-top: 0.9rem;
@@ -197,7 +193,7 @@
 
     .empty {
       text-align: center;
-      padding: 4.5rem 1.5rem;
+      padding: 4rem 1.5rem;
       color: var(--muted);
     }
     .spinner {
@@ -209,6 +205,53 @@
       margin: 0 auto 1.1rem;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Betting Calculator */
+    .bet-box {
+      background: linear-gradient(160deg, #1e1b4b, #0f172a);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 16px;
+      padding: 1.4rem;
+      margin-bottom: 1.8rem;
+    }
+    .bet-box h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: #a5b4fc;
+    }
+    .bet-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .bet-row label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .bet-row input {
+      width: 140px;
+      padding: 0.55rem 0.8rem;
+    }
+    .bet-result {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    .bet-stat {
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 0.9rem;
+      text-align: center;
+    }
+    .bet-stat .lbl { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.25rem; }
+    .bet-stat .val { font-size: 1.25rem; font-weight: 700; }
+    .bet-stat .val.green { color: var(--green); }
+    .bet-stat .val.red { color: var(--red); }
 
     .overlay {
       position: fixed; inset: 0;
@@ -225,13 +268,10 @@
       background: linear-gradient(165deg, #0f172a, #1e293b);
       border: 1px solid rgba(99,102,241,0.3);
       border-radius: 20px;
-      width: 100%; max-width: 520px;
+      width: 100%; max-width: 480px;
       padding: 1.6rem;
       position: relative;
-      transform: translateY(15px) scale(0.97);
-      transition: transform 0.25s;
     }
-    .overlay.open .modal { transform: none; }
     .modal-x {
       position: absolute; top: 1rem; right: 1rem;
       width: 34px; height: 34px;
@@ -243,34 +283,21 @@
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
-    .modal-x:hover { color: #fff; }
-    .modal-head {
-      text-align: center;
-      margin-bottom: 1.4rem;
-    }
+    .modal-head { text-align: center; margin-bottom: 1.3rem; }
     .modal-logos {
       display: flex; align-items: center; justify-content: center; gap: 1rem;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.7rem;
     }
-    .modal-logos img { width: 56px; height: 56px; object-fit: contain; }
-    .modal-score { font-size: 2.2rem; font-weight: 800; }
-    .modal-title { font-size: 1.15rem; font-weight: 700; margin-top: 0.4rem; }
-    .modal-sub { font-size: 0.9rem; color: var(--muted); margin-top: 0.25rem; }
+    .modal-logos img { width: 52px; height: 52px; object-fit: contain; }
+    .modal-score { font-size: 2rem; font-weight: 800; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-top: 0.3rem; }
+    .modal-sub { font-size: 0.88rem; color: var(--muted); }
     .info-row {
       display: flex; justify-content: space-between;
-      padding: 0.65rem 0;
+      padding: 0.6rem 0;
       border-bottom: 1px solid rgba(255,255,255,0.06);
       font-size: 0.95rem;
     }
-    .tip {
-      margin-top: 1.4rem;
-      padding: 1rem;
-      background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.1));
-      border: 1px solid rgba(99,102,241,0.3);
-      border-radius: 12px;
-      font-size: 0.9rem;
-    }
-    .tip strong { color: #a5b4fc; }
 
     footer {
       text-align: center;
@@ -281,7 +308,7 @@
 
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
-      #search { min-width: 140px; }
+      #search { min-width: 130px; }
     }
   </style>
 </head>
@@ -311,6 +338,43 @@
   </header>
 
   <main>
+    <!-- CALCULADORA DE APUESTAS -->
+    <div class="bet-box">
+      <h3>💰 Calculadora de Apuestas</h3>
+      <div class="bet-row">
+        <label>
+          Cuota (odds)
+          <input type="number" id="odds" step="0.01" min="1.01" placeholder="1.85" value="1.85">
+        </label>
+        <label>
+          Monto a apostar ($)
+          <input type="number" id="stake" step="1" min="1" placeholder="100" value="100">
+        </label>
+        <label style="justify-content:flex-end">
+          <span style="opacity:0">.</span>
+          <button onclick="calcBet()" style="background:linear-gradient(135deg,#6366f1,#a855f7);border:none;color:#fff;padding:0.55rem 1.2rem;border-radius:10px;font-weight:600;cursor:pointer">Calcular</button>
+        </label>
+      </div>
+      <div class="bet-result" id="betResult">
+        <div class="bet-stat">
+          <div class="lbl">Ganancia neta</div>
+          <div class="val green" id="profit">$85.00</div>
+        </div>
+        <div class="bet-stat">
+          <div class="lbl">Retorno total</div>
+          <div class="val" id="total">$185.00</div>
+        </div>
+        <div class="bet-stat">
+          <div class="lbl">Probabilidad implícita</div>
+          <div class="val" id="prob">54.1%</div>
+        </div>
+        <div class="bet-stat">
+          <div class="lbl">Riesgo</div>
+          <div class="val red" id="risk">Medio</div>
+        </div>
+      </div>
+    </div>
+
     <div class="tabs">
       <div class="tab active" data-v="all">Todos</div>
       <div class="tab" data-v="live">En Vivo</div>
@@ -318,12 +382,13 @@
       <div class="tab" data-v="finished">Finalizados</div>
     </div>
     <div id="app">
-      <div class="empty"><div class="spinner"></div>Cargando partidos en vivo...</div>
+      <div class="empty"><div class="spinner"></div>Cargando partidos...</div>
     </div>
   </main>
 
   <footer>
-    Datos en tiempo real · Actualización automática cada 40 s · Logos · Base para análisis de apuestas
+    Datos en tiempo real · Calculadora de apuestas · Actualización automática<br>
+    Esta herramienta es solo informativa. No es consejo de apuestas.
   </footer>
 
   <div class="overlay" id="overlay">
@@ -355,6 +420,25 @@
         new Date().toLocaleTimeString("es-MX", { hour12: false });
     }, 1000);
 
+    // Calculadora
+    function calcBet() {
+      const odds = parseFloat(document.getElementById("odds").value) || 1;
+      const stake = parseFloat(document.getElementById("stake").value) || 0;
+      const profit = (odds - 1) * stake;
+      const total = odds * stake;
+      const prob = (1 / odds) * 100;
+
+      document.getElementById("profit").textContent = "$" + profit.toFixed(2);
+      document.getElementById("total").textContent = "$" + total.toFixed(2);
+      document.getElementById("prob").textContent = prob.toFixed(1) + "%";
+
+      let risk = "Bajo";
+      if (prob < 40) risk = "Alto";
+      else if (prob < 55) risk = "Medio";
+      document.getElementById("risk").textContent = risk;
+    }
+    calcBet();
+
     // Tabs
     document.querySelectorAll(".tab").forEach(t => {
       t.onclick = () => {
@@ -374,16 +458,15 @@
       render();
     };
 
-    async function fetchSport(sportId) {
-      const url = `https://sportscore.com/api/widget/matches/?sport=${sportId}&limit=40`;
-      const res = await fetch(url);
+    async function fetchSport(id) {
+      const res = await fetch(`https://sportscore.com/api/widget/matches/?sport=${id}&limit=50`);
       if (!res.ok) throw new Error(res.status);
       const data = await res.json();
       return (data.matches || []).map(m => ({
         ...m,
-        sportId,
-        sportName: SPORTS.find(s => s.id === sportId)?.name || sportId,
-        sportIcon: SPORTS.find(s => s.id === sportId)?.icon || "🏆"
+        sportId: id,
+        sportName: SPORTS.find(s => s.id === id)?.name || id,
+        sportIcon: SPORTS.find(s => s.id === id)?.icon || "🏆"
       }));
     }
 
@@ -395,9 +478,7 @@
 
       try {
         if (sport === "all") {
-          const results = await Promise.allSettled(
-            SPORTS.map(s => fetchSport(s.id))
-          );
+          const results = await Promise.allSettled(SPORTS.map(s => fetchSport(s.id)));
           matches = [];
           results.forEach(r => {
             if (r.status === "fulfilled") matches.push(...r.value);
@@ -406,41 +487,44 @@
           matches = await fetchSport(sport);
         }
 
-        // Ordenar por hora
-        matches.sort((a, b) => new Date(a.time) - new Date(b.time));
+        matches.sort((a, b) => new Date(a.time || 0) - new Date(b.time || 0));
         cache = [...matches];
-
         st.textContent = "Actualizado " + new Date().toLocaleTimeString("es-MX");
         render();
-      } catch (err) {
-        console.error(err);
+      } catch (e) {
+        console.error(e);
         if (cache.length) {
           matches = cache;
           st.textContent = "Datos en caché";
           dot.classList.add("err");
           render();
         } else {
-          document.getElementById("app").innerHTML = `
-            <div class="empty">
-              <p style="font-size:1.15rem;margin-bottom:0.5rem">No se pudieron cargar los partidos</p>
-              <p>Se reintentará automáticamente en unos segundos.</p>
-            </div>`;
+          document.getElementById("app").innerHTML = `<div class="empty">No se pudieron cargar los partidos.<br>Se reintentará automáticamente.</div>`;
           st.textContent = "Error de conexión";
           dot.classList.add("err");
         }
       }
     }
 
+    function isLive(m) {
+      const s = (m.status || "").toLowerCase();
+      const t = (m.status_text || "").toLowerCase();
+      return s === "live" || s === "inprogress" || t.includes("live") || t.includes("1st") || t.includes("2nd") || t.includes("half");
+    }
+    function isFinished(m) {
+      const s = (m.status || "").toLowerCase();
+      const t = (m.status_text || "").toLowerCase();
+      return s === "finished" || s === "closed" || s === "ended" || t.includes("finished") || t.includes("ended") || t.includes("ft");
+    }
+    function isScheduled(m) {
+      return !isLive(m) && !isFinished(m);
+    }
+
     function filtered() {
       let list = [...matches];
-
-      if (view === "live") {
-        list = list.filter(m => m.status === "live" || m.status === "inprogress" || (m.status_text || "").toLowerCase().includes("live"));
-      } else if (view === "scheduled") {
-        list = list.filter(m => m.status === "notstarted" || m.status === "scheduled" || !m.home_score);
-      } else if (view === "finished") {
-        list = list.filter(m => m.status === "finished" || m.status === "closed" || (m.status_text || "").toLowerCase().includes("finished"));
-      }
+      if (view === "live") list = list.filter(isLive);
+      else if (view === "scheduled") list = list.filter(isScheduled);
+      else if (view === "finished") list = list.filter(isFinished);
 
       if (query) {
         list = list.filter(m => {
@@ -452,26 +536,17 @@
     }
 
     function card(m) {
-      let bc = "scheduled", bl = m.status_text || m.status || "Próximo";
-      const st = (m.status || "").toLowerCase();
-      const txt = (m.status_text || "").toLowerCase();
-
-      if (st === "live" || st === "inprogress" || txt.includes("live")) {
-        bc = "live"; bl = "EN VIVO";
-      } else if (st === "finished" || st === "closed" || txt.includes("finished") || txt.includes("ended")) {
-        bc = "final"; bl = "FINAL";
-      }
+      let bc = "scheduled", bl = m.status_text || "Próximo";
+      if (isLive(m)) { bc = "live"; bl = "EN VIVO"; }
+      else if (isFinished(m)) { bc = "final"; bl = "FINAL"; }
 
       const date = m.time ? new Date(m.time).toLocaleString("es-MX", {
         weekday: "short", day: "numeric", month: "short",
         hour: "2-digit", minute: "2-digit"
       }) : "";
 
-      const homeScore = m.home_score ?? "—";
-      const awayScore = m.away_score ?? "—";
-
       return `
-        <div class="card" onclick='openModal(${JSON.stringify(m).replace(/'/g, "&#39;")})'>
+        <div class="card" onclick='openModal(${JSON.stringify(m).replace(/'/g,"&#39;")})'>
           <div class="card-top">
             <span>${date}</span>
             <span class="badge ${bc}">${bl}</span>
@@ -480,17 +555,17 @@
             <div class="team">
               ${m.away_logo ? `<img src="${m.away_logo}" onerror="this.style.opacity=0.3">` : '<div style="width:40px;height:40px"></div>'}
               <span class="name">${m.away || "—"}</span>
-              <span class="score">${awayScore}</span>
+              <span class="score">${m.away_score ?? "—"}</span>
             </div>
             <div class="team">
               ${m.home_logo ? `<img src="${m.home_logo}" onerror="this.style.opacity=0.3">` : '<div style="width:40px;height:40px"></div>'}
               <span class="name">${m.home || "—"}</span>
-              <span class="score">${homeScore}</span>
+              <span class="score">${m.home_score ?? "—"}</span>
             </div>
           </div>
           <div class="card-bottom">
             <span>${m.competition || m.sportName}</span>
-            <span class="cta">Ver detalles →</span>
+            <span class="cta">Ver + Apostar →</span>
           </div>
         </div>`;
     }
@@ -500,22 +575,21 @@
       const app = document.getElementById("app");
 
       if (!list.length) {
-        app.innerHTML = `<div class="empty">No hay partidos con este filtro.<br><small>Prueba “Todos los deportes” o cambia de pestaña.</small></div>`;
+        app.innerHTML = `<div class="empty">No hay partidos con este filtro.<br><small>Prueba la pestaña “Todos”.</small></div>`;
         return;
       }
 
       if (sport === "all") {
         const groups = {};
         list.forEach(m => {
-          const key = m.sportName;
-          if (!groups[key]) groups[key] = { icon: m.sportIcon, items: [] };
-          groups[key].items.push(m);
+          if (!groups[m.sportName]) groups[m.sportName] = { icon: m.sportIcon, items: [] };
+          groups[m.sportName].items.push(m);
         });
         app.innerHTML = Object.entries(groups).map(([name, g]) => `
           <div class="sport-block">
             <div class="sport-header">
               <h2>${g.icon} ${name}</h2>
-              <span class="count">${g.items.length} partidos</span>
+              <span class="count">${g.items.length}</span>
             </div>
             <div class="grid">${g.items.map(card).join("")}</div>
           </div>
@@ -526,16 +600,12 @@
     }
 
     function openModal(m) {
-      const overlay = document.getElementById("overlay");
-      const body = document.getElementById("modalBody");
-      overlay.classList.add("open");
-
+      document.getElementById("overlay").classList.add("open");
       const date = m.time ? new Date(m.time).toLocaleString("es-MX", {
-        weekday: "long", day: "numeric", month: "long",
-        hour: "2-digit", minute: "2-digit"
+        weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
       }) : "";
 
-      body.innerHTML = `
+      document.getElementById("modalBody").innerHTML = `
         <div class="modal-head">
           <div class="modal-logos">
             ${m.away_logo ? `<img src="${m.away_logo}">` : ""}
@@ -546,13 +616,12 @@
           <div class="modal-sub">${m.competition || m.sportName}</div>
         </div>
         <div class="info-row"><span>Estado</span><strong>${m.status_text || m.status}</strong></div>
-        <div class="info-row"><span>Fecha y hora</span><strong>${date}</strong></div>
+        <div class="info-row"><span>Fecha</span><strong>${date}</strong></div>
         <div class="info-row"><span>Deporte</span><strong>${m.sportName}</strong></div>
         <div class="info-row"><span>Competición</span><strong>${m.competition || "—"}</strong></div>
-        <div class="tip">
-          <strong>💡 Base para apuestas</strong><br>
-          Usa esta información como punto de partida. Combínala con forma reciente, lesiones y cuotas de casas de apuestas para tomar mejores decisiones.
-        </div>
+        <p style="margin-top:1.2rem;font-size:0.9rem;color:var(--muted)">
+          Usa la calculadora de arriba para simular tu apuesta con la cuota que te ofrezca la casa de apuestas.
+        </p>
       `;
     }
 
@@ -562,9 +631,6 @@
     document.getElementById("overlay").onclick = e => {
       if (e.target.id === "overlay") closeModal();
     };
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") closeModal();
-    });
 
     // Iniciar
     load();
