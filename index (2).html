@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Dashboard Deportivo en Vivo</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #3b82f6;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --live: #f97316;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    header {
+      background: var(--card);
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    h1 { font-size: 1.4rem; font-weight: 700; }
+    .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    select, button {
+      background: #334155;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    select:focus, button:hover { outline: 2px solid var(--accent); }
+    .status {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .status.live { color: var(--live); font-weight: 600; }
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 0.5rem 1.2rem;
+      background: #334155;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .tab.active { background: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid #334155;
+    }
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .badge {
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.live { background: var(--live); color: #000; }
+    .badge.final { background: #475569; }
+    .badge.scheduled { background: #1e40af; }
+    .teams {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .team {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .team-name { font-weight: 600; }
+    .score { font-size: 1.3rem; font-weight: 700; min-width: 30px; text-align: right; }
+    .empty { text-align: center; padding: 3rem; color: var(--muted); }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⚽ Mi Dashboard Deportivo</h1>
+    <div class="controls">
+      <select id="sportSelect">
+        <option value="soccer/eng.1">Premier League</option>
+        <option value="soccer/esp.1">La Liga</option>
+        <option value="soccer/mex.1">Liga MX</option>
+        <option value="soccer/ita.1">Serie A</option>
+        <option value="soccer/ger.1">Bundesliga</option>
+        <option value="soccer/uefa.champions">Champions League</option>
+        <option value="basketball/nba">NBA</option>
+        <option value="football/nfl">NFL</option>
+        <option value="baseball/mlb">MLB</option>
+        <option value="hockey/nhl">NHL</option>
+        <option value="tennis/atp">Tenis ATP</option>
+      </select>
+      <button onclick="loadData()">Actualizar ahora</button>
+      <span class="status" id="lastUpdate">Cargando...</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <div class="tab active" data-filter="all">Todos</div>
+      <div class="tab" data-filter="live">En vivo</div>
+      <div class="tab" data-filter="scheduled">Próximos</div>
+      <div class="tab" data-filter="final">Finalizados</div>
+    </div>
+
+    <div id="content" class="grid">
+      <div class="empty">Cargando datos...</div>
+    </div>
+  </main>
+
+  <footer>
+    Datos en tiempo real vía ESPN API pública · Actualización automática cada 45 segundos<br>
+    Interfaz propia · Hosted on GitHub Pages
+  </footer>
+
+  <script>
+    let currentData = [];
+    let currentFilter = "all";
+    let refreshInterval;
+
+    const sportSelect = document.getElementById("sportSelect");
+    const content = document.getElementById("content");
+    const lastUpdate = document.getElementById("lastUpdate");
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        currentFilter = tab.dataset.filter;
+        render();
+      });
+    });
+
+    async function loadData() {
+      const path = sportSelect.value;
+      lastUpdate.textContent = "Actualizando...";
+      lastUpdate.className = "status";
+
+      try {
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`);
+        const data = await res.json();
+        currentData = data.events || [];
+        lastUpdate.textContent = "Actualizado: " + new Date().toLocaleTimeString("es-MX");
+        lastUpdate.className = "status live";
+        render();
+      } catch (err) {
+        content.innerHTML = `<div class="empty">Error al cargar datos. Intenta de nuevo.</div>`;
+        lastUpdate.textContent = "Error de conexión";
+      }
+    }
+
+    function render() {
+      let filtered = currentData;
+      if (currentFilter === "live") {
+        filtered = currentData.filter(e => e.status?.type?.state === "in");
+      } else if (currentFilter === "scheduled") {
+        filtered = currentData.filter(e => e.status?.type?.state === "pre");
+      } else if (currentFilter === "final") {
+        filtered = currentData.filter(e => e.status?.type?.state === "post");
+      }
+
+      if (filtered.length === 0) {
+        content.innerHTML = `<div class="empty">No hay partidos en esta categoría ahora.</div>`;
+        return;
+      }
+
+      content.innerHTML = filtered.map(event => {
+        const status = event.status?.type?.state || "pre";
+        const statusText = event.status?.type?.shortDetail || event.status?.type?.description || "";
+        let badgeClass = "scheduled";
+        if (status === "in") badgeClass = "live";
+        if (status === "post") badgeClass = "final";
+
+        const competitors = event.competitions?.[0]?.competitors || [];
+        const home = competitors.find(c => c.homeAway === "home") || competitors[0];
+        const away = competitors.find(c => c.homeAway === "away") || competitors[1];
+
+        return `
+          <div class="card">
+            <div class="match-header">
+              <span>${event.competitions?.[0]?.venue?.fullName || event.name || ""}</span>
+              <span class="badge ${badgeClass}">${status === "in" ? "EN VIVO" : statusText}</span>
+            </div>
+            <div class="teams">
+              <div class="team">
+                <span class="team-name">${away?.team?.displayName || away?.athlete?.displayName || "—"}</span>
+                <span class="score">${away?.score ?? "-"}</span>
+              </div>
+              <div class="team">
+                <span class="team-name">${home?.team?.displayName || home?.athlete?.displayName || "—"}</span>
+                <span class="score">${home?.score ?? "-"}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Carga inicial + auto-refresh
+    sportSelect.addEventListener("change", loadData);
+    loadData();
+    refreshInterval = setInterval(loadData, 45000); // cada 45 segundos
+  </script>
+</body>
+</html>
